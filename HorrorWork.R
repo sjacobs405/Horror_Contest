@@ -3,7 +3,7 @@
 #     separate and then drop year from title - redundant
 #     separate filming locations into individual columns
 
-
+library(dplyr)
 
 horror = subset(movies, select = -c(Plot, Cast))
 #create new df dropping plot and cast columns
@@ -50,14 +50,69 @@ df <- horror %>%
          language4, language5, language6, language7, language8, location, location2,
          location3, location4, location5, location6, budget)
 
-levels(df$movie_rating)
+str(df)
+
+#class(df$movie_rating)
+#levels(df$movie_rating)
+unique(df$movie_rating)
 #find levels and then recode to combine "not rated" & "unrated"
 
-library(dplyr)
+
 df_clean <- df %>%
   mutate(movie_rating = fct_recode(movie_rating, "NOT RATED" = "UNRATED"))
 levels(df_clean$movie_rating)
+count(df_clean$movie_rating)
+#movie_rating is missing a significant number of entries - approx half are blank
 
+unique(df$release_country)
+factor(df_clean$release_country)
+count(df_clean$release_country)
+#we see here that there are 72 levels in release_country with USA being the 
+#the largest group by far. 
+
+count(df_clean$genre)
+#this shows that the primary genre - first listed - for the data
+#'horror' is the top listing for more than half with 'comedy', 'drama' and 
+#'action' coming in next
+
+count(df_clean$genre2)
+#Here we can see all but 1060 entries have at least 2 genre classifications
+#I think that we should look at primary genre classification and subsequent
+#genre classification as it relates to both rating and review
+
+count(df_clean$genre3)
+count(df_clean$genre4)
+count(df_clean$genre5)
+count(df_clean$genre6)
+count(df_clean$genre7)
+count(df_clean$genre8)
+count(df_clean$genre9)
+#just verifying that we have this fully broken out
+
+count(df_clean$review_rating)
+#it appears that this variable is on a 1-10 rating system 
+#252 out of 3,328 are missing this data
+####unique(horror$Review.Rating)
+####sum(is.na(horror$Review.Rating))
+
+count(df_clean$language)
+#this shows that the primary language - first listed - for the data 
+#'english' is most common by far
+
+count(df_clean$language2) 
+count(df_clean$language3)
+count(df_clean$language4)
+count(df_clean$language5)
+count(df_clean$language6)
+count(df_clean$language7)
+count(df_clean$language8)
+#verifying the levels of subsequent languages
+#I think that we can use the first 3 columns and merge the rest 
+
+count(df_clean$location)
+#from the looks of this list, I think we should disregard this variable for now
+#It is wildly inconsistent with the type of location identified and will require
+#a lot of cleaning to be useful
 
 #did some research on currency conversion and found fixerapi to load in
 #I want to see if we can convert all budget entries to USD
@@ -98,19 +153,37 @@ summary(df_clean$runtime_in_min)
 ggplot(df_clean, aes(sample = runtime_in_min)) + geom_qq()
 #####runtimes seem to have roughly normal distribution
 
-#looking at different levels in genre 
-levels(df_clean$genre)
-levels(df_clean$release_date)
+
+####
+#Trying to run analysis on runtime as it pertains to everything else
+#
+
+df_clean$runtime_in_min <- as.integer(df_clean$runtime_in_min)
+df_clean$review_rating <- as.integer(df_clean$runtime_in_min)
+#convert to integer
+
+mean(df_clean$runtime_in_min)
+summarize(df_clean, ave.runtime = mean(runtime_in_min))
+df_clean %>% group_by(genre) %>% summarize(ave.runtime = mean(ave.runtime))
+
+df_clean %>%
+  group_by(review_rating) %>%
+  summarise(mean_run = mean(runtime_in_min))
 
 
 
 
 
 
+
+d2 <- ggplot(df_clean, aes(x = "", y = review_rating))
+d2 + geom_boxplot() + xlab("")
+summary(df_clean$review_rating)
+ggplot(df_clean, aes(sample = review_rating)) + geom_qq()
 
 
 ggplot(df_clean, aes(movie_rating)) + geom_bar()
-barchart(df_clean$movie_rating)
+barchart(df_clean$movie_rating, fill = "salmon", color ="orangered4")
 
 
 
@@ -152,18 +225,12 @@ sapply(df, function(x) length(unique(x)))
 #horror$Movie.RatingR[horror$Movie.Rating=='TV-PG'] <- 10
 #horror$Movie.RatingR[horror$Movie.Rating=='NC-17'] <- 11
 
-unique(horror$Review.Rating)
-#it appears that this variable is on a 1-10 rating system 
-sum(is.na(horror$Review.Rating))
-#252 out of 3,328 are missing this data
 
-str(horror)
+
+
 
 as.Date(horror$Release.Date, "%Y-%m-%j")
 #convert Release.Date to a number
 
 
-head(horror)
-
-levels(horror$Review.Rating)
 
