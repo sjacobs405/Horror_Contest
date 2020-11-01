@@ -2,10 +2,13 @@ install.packages("dplyr")
 library("dplyr")
 library("ggplot2")
 
+# Narrowing down the columns that will be used
 Movies1 <- IMDB.Horror.movies %>% select(Title, Genres, Release.Date, Release.Country, Review.Rating)
 
+# Arranging Review.Rating in descending order
 Movies2 <- Movies1 %>% arrange(desc(Review.Rating))
 
+# Filter top 4 countries 
 MoviesByCountries <- Movies1 %>% filter(Release.Country %in% c("USA", "UK", "India", "Japan"))
 
 Movies_Country_Rating <- MoviesByCountries %>% filter(Review.Rating >= 8)
